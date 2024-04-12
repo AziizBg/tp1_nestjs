@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
+import { AuthMiddleware } from './middlewares/auth.middleware';
 import { AppService } from './app.service';
 import { CvModule } from './cv/cv.module';
 import { SkillModule } from './skill/skill.module';
@@ -30,3 +31,10 @@ dotenv.config();
   providers: [AppService],
 })
 export class AppModule {}
+// export class AppModule implements NestModule {
+//   configure(consumer: MiddlewareConsumer) {
+//     consumer
+//       .apply(AuthMiddleware)
+//       .forRoutes('cv');
+//   }
+// }
