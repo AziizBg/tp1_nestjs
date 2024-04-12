@@ -12,11 +12,7 @@ export class CreateUserDto {
   email: string;
 
   @IsNotEmpty()
-  @IsString()
-  password: string;
-
-  // @IsNotEmpty()
-  // @ValidateNested({ each: true })
-  // @Type(() => CV)
-  // cvs: CV[];
+  @ValidateNested({ each: true })
+  @Type(() => CV)
+  cvs: CV[];
 }

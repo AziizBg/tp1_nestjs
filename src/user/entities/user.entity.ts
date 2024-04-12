@@ -1,8 +1,9 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { CV } from '../../cv/entities/cv.entity';
+import { TimestampEntities } from '../../Generics/timestamp.entities';
 
 @Entity('user')
-export class User {
+export class User extends TimestampEntities {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -17,10 +18,12 @@ export class User {
   })
   email: string;
 
-  @Column()
-  password: number;
+  @Column({
+    length: 50,
+  })
+  password: string;
 
-  @OneToMany((type) => CV, (cv) => cv.user, {
+  @OneToMany(() => CV, (cv) => cv.user, {
     nullable: true,
     cascade: true,
   })

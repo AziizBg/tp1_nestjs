@@ -1,26 +1,63 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
+
+  async create(user: CreateUserDto): Promise<User> {
+    return await this.userRepository.save(user);
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findAll(): Promise<User[]> {
+    return await this.userRepository.find(
+      // {
+      // relations: {
+      //   cvs: true,
+      // },
+      // }
+    );
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number): Promise<User | null> {
+    return await this.userRepository.findOneBy({ id });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    const newUser = await this.userRepository.preload({
+      id,
+      ...updateUserDto,
+    });
+    if (!newUser) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    return await this.userRepository.save(newUser);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  // async remove(id: number) {
+  //  const userToRemove = await this.userRepository.findOneBy({id});
+  //   if (!userToRemove) {
+  //     throw new NotFoundException(`User with id ${id} not found`);
+  //   }
+  //   return await this.userRepository.remove(userToRemove);
+  // }
+
+  async softDelete(id: number) {
+    const userToRemove = await this.userRepository.findOneBy({ id });
+    if (!userToRemove) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    return await this.userRepository.softDelete(id);
+  }
+
+  async restore(id: number) {
+    return await this.userRepository.restore(id);
   }
 }
