@@ -1,26 +1,56 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCvDto } from './dto/create-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CV } from './entities/cv.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class CvService {
-  create(createCvDto: CreateCvDto) {
-    return 'This action adds a new cv';
+  constructor(
+    @InjectRepository(CV)
+    private cvRepository: Repository<CV>,
+  ) {}
+  async create(cv: CreateCvDto): Promise<CV> {
+    return await this.cvRepository.save(cv);
   }
 
-  findAll() {
-    return `This action returns all cv`;
+  async findAll(): Promise<CV[]> {
+    return await this.cvRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} cv`;
+  async findOne(id: number): Promise<CV | null> {
+    return await this.cvRepository.findOneBy({ id });
   }
 
-  update(id: number, updateCvDto: UpdateCvDto) {
-    return `This action updates a #${id} cv`;
+  async update(id: number, updateCvDto: UpdateCvDto): Promise<CV> {
+    const newCv = await this.cvRepository.preload({
+      id,
+      ...updateCvDto,
+    });
+    if (!newCv) {
+      throw new NotFoundException(`CV with id ${id} not found`);
+    }
+    return await this.cvRepository.save(newCv);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} cv`;
+  // async remove(id: number) {
+  //   const cvToRemove = await this.cvRepository.findOneBy({id});
+  //   if (!cvToRemove) {
+  //     throw new NotFoundException(`CV with id ${id} not found`);
+  //   }
+  //   return await this.cvRepository.remove(cvToRemove);
+  // }
+
+  async softDelete(id: number) {
+    const cvToRemove = await this.cvRepository.findOneBy({ id });
+    if (!cvToRemove) {
+      throw new NotFoundException(`CV with id ${id} not found`);
+    }
+    return await this.cvRepository.softDelete(id);
+  }
+
+  async restore(id: number) {
+    return await this.cvRepository.restore(id);
   }
 }

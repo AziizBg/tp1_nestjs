@@ -11,7 +11,7 @@ export class Skill {
   })
   Designation: string;
 
-  @ManyToMany((type) => Skill, (skill) => skill.cvs, {
+  @ManyToMany(() => Skill, (skill) => skill.cvs, {
     nullable: true,
     cascade: ['insert', 'update'],
   })

@@ -1,34 +1,52 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { CvService } from './cv.service';
 import { CreateCvDto } from './dto/create-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
+import { CV } from './entities/cv.entity';
 
 @Controller('cv')
 export class CvController {
   constructor(private readonly cvService: CvService) {}
 
   @Post()
-  create(@Body() createCvDto: CreateCvDto) {
-    return this.cvService.create(createCvDto);
+  async create(@Body() createCvDto: CreateCvDto): Promise<CV> {
+    return await this.cvService.create(createCvDto);
   }
 
   @Get()
-  findAll() {
-    return this.cvService.findAll();
+  async findAll(): Promise<CV[]> {
+    return await this.cvService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.cvService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return await this.cvService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCvDto: UpdateCvDto) {
-    return this.cvService.update(+id, updateCvDto);
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateCvDto: UpdateCvDto,
+  ): Promise<CV> {
+    return await this.cvService.update(id, updateCvDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cvService.remove(+id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.cvService.softDelete(id);
+  }
+
+  @Get('restore/:id')
+  async restore(@Param('id', ParseIntPipe) id: number) {
+    return await this.cvService.restore(id);
   }
 }

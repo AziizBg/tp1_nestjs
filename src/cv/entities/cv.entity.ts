@@ -1,9 +1,17 @@
-import { Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  JoinTable,
+} from 'typeorm';
 import { Skill } from '../../skill/entities/skill.entity';
 import { User } from '../../user/entities/user.entity';
+import { TimestampEntities } from '../../Generics/timestamp.entities';
 
 @Entity('cv')
-export class CV {
+export class CV extends TimestampEntities {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -28,17 +36,18 @@ export class CV {
   })
   job: string;
 
-  @Column()
+  @Column({ nullable: true })
   path: string;
 
-  @ManyToMany((type) => Skill, (skill) => skill.cvs, {
+  @ManyToMany(() => Skill, (skill) => skill.cvs, {
     nullable: true,
     cascade: true,
     eager: true,
   })
+  @JoinTable()
   skills: Skill[];
 
-  @ManyToOne((type) => User, (user) => user.cvs, {
+  @ManyToOne(() => User, (user) => user.cvs, {
     nullable: false,
     cascade: ['insert', 'update'],
     eager: true,
