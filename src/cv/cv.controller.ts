@@ -63,14 +63,13 @@ export class CvController {
   )
   async create(
     @Body() createCvDto: CreateCvDto,
-    @UploadedFile(
-      // new ParseFilePipe({
-      //   validators: [
-      //     new MaxFileSizeValidator({ maxSize: 1000000 }),
-      //     new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
-      //   ],
-      // }),
-    )
+    @UploadedFile()
+    // new ParseFilePipe({
+    //   validators: [
+    //     new MaxFileSizeValidator({ maxSize: 1000000 }),
+    //     new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
+    //   ],
+    // }),
     image: Express.Multer.File,
   ): Promise<CV> {
     createCvDto.path = image ? image.path : '';
