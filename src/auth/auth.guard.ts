@@ -56,6 +56,3 @@ export class AuthGuard implements CanActivate {
     return authHeader.split(' ')[1];
   }
 }
- 'Bearer' ? token : undefined;
-    }
-}
