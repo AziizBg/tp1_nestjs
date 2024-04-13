@@ -6,8 +6,8 @@ import { CvModule } from './cv/cv.module';
 import { SkillModule } from './skill/skill.module';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import * as dotenv from 'dotenv';
 import { AuthModule } from './auth/auth.module';
+import * as dotenv from 'dotenv';
 dotenv.config();
 
 @Module({

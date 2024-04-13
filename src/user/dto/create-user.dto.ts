@@ -1,4 +1,4 @@
-import {IsNotEmpty, ValidateNested, IsString, IsEmail} from 'class-validator';
+import { IsNotEmpty, ValidateNested, IsString, IsEmail } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CV } from 'src/cv/entities/cv.entity';
 

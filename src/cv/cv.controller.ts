@@ -26,6 +26,7 @@ import { CV } from './entities/cv.entity';
 import { GetPaginatedTodoDto } from './dto/get-paginated-cvs.dto';
 import { GetCvDto } from './dto/get-cv.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { User } from 'src/decorators/user.decorator';
 
 @Controller({
   path: 'cv',
@@ -35,6 +36,7 @@ export class CvController {
   constructor(private readonly cvService: CvService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
@@ -82,19 +84,25 @@ export class CvController {
   }
 
   @Get('filters')
+  @UseGuards(JwtAuthGuard)
   async findAllWithFilters(@Query('') queryparams: GetCvDto): Promise<CV[]> {
     return await this.cvService.findAllWithFilters(queryparams);
   }
+
   @Get('paginated')
+  @UseGuards(JwtAuthGuard)
   async findPaginated(@Query() queryParams: GetPaginatedTodoDto) {
     return await this.cvService.findAllPaginated(queryParams);
   }
+
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return await this.cvService.findOne(id);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCvDto: UpdateCvDto,
@@ -103,11 +111,13 @@ export class CvController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.cvService.softDelete(id);
   }
 
   @Get('restore/:id')
+  @UseGuards(JwtAuthGuard)
   async restore(@Param('id', ParseIntPipe) id: number) {
     return await this.cvService.restore(id);
   }
