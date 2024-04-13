@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { CV } from '../../cv/entities/cv.entity';
 import { TimestampEntities } from '../../Generics/timestamp.entities';
+import { UserRoleEnum } from '../../Generics/Enums/role-user.enum';
 
 @Entity('user')
 export class User extends TimestampEntities {
@@ -18,11 +19,13 @@ export class User extends TimestampEntities {
   })
   email: string;
 
-  @Column({
-    length: 50,
-  })
+  @Column()
   password: string;
+  @Column()
+  salt: string;
 
+  @Column()
+  role: string;
   @OneToMany(() => CV, (cv) => cv.user, {
     nullable: true,
     cascade: true,

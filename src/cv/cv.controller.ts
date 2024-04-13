@@ -11,7 +11,7 @@ import {
   Patch,
   Post,
   Query,
-  UploadedFile,
+  UploadedFile, UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { CvService } from './cv.service';
@@ -22,8 +22,12 @@ import { diskStorage } from 'multer';
 import { CV } from './entities/cv.entity';
 import { GetPaginatedTodoDto } from './dto/get-paginated-cvs.dto';
 import { GetCvDto } from './dto/get-cv.dto';
+import {JwtAuthGuard} from "../auth/guards/jwt-auth.guard";
 
-@Controller('cv')
+@Controller({
+  path: 'cv',
+  // version: '1',
+})
 export class CvController {
   constructor(private readonly cvService: CvService) {}
 
@@ -55,6 +59,7 @@ export class CvController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   async findAll(): Promise<CV[]> {
     return await this.cvService.findAll();
   }
@@ -63,7 +68,7 @@ export class CvController {
   async findAllWithFilters(@Query('') queryparams: GetCvDto): Promise<CV[]> {
     return await this.cvService.findAllWithFilters(queryparams);
   }
-  @Get()
+  @Get('paginated')
   async findPaginated(@Query() queryParams: GetPaginatedTodoDto) {
     return await this.cvService.findAllPaginated(queryParams);
   }

@@ -7,6 +7,7 @@ import { SkillModule } from './skill/skill.module';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
+import { AuthModule } from './auth/auth.module';
 dotenv.config();
 
 @Module({
@@ -26,6 +27,7 @@ dotenv.config();
     CvModule,
     SkillModule,
     UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -35,6 +37,6 @@ export class AppModule {}
 //   configure(consumer: MiddlewareConsumer) {
 //     consumer
 //       .apply(AuthMiddleware)
-//       .forRoutes('cv');
+//       .forRoutes('cv*');
 //   }
 // }

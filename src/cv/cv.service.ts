@@ -21,6 +21,11 @@ export class CvService {
     return await this.cvRepository.find();
   }
 
+  async findAllByUserId(id: number): Promise<CV[]> {
+    const cvs = await this.cvRepository.find();
+    return cvs.filter((cv) => cv.user.id === id);
+  }
+
   async findAllWithFilters(queryParams: GetCvDto) {
     const Cvs = await this.findAll();
     const { critere, age } = queryParams;
@@ -63,7 +68,7 @@ export class CvService {
       ...updateCvDto,
     });
     if (!newCv) {
-      throw new NotFoundException('CV with id ${id} not found');
+      throw new NotFoundException(`CV with id ${id} not found`);
     }
     return await this.cvRepository.save(newCv);
   }
@@ -79,7 +84,7 @@ export class CvService {
   async softDelete(id: number) {
     const cvToRemove = await this.cvRepository.findOneBy({ id });
     if (!cvToRemove) {
-      throw new NotFoundException('CV with id ${id} not found');
+      throw new NotFoundException(`CV with id ${id} not found`);
     }
     return await this.cvRepository.softDelete(id);
   }
