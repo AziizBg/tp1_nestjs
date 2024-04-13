@@ -14,14 +14,14 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import {CvService} from './cv.service';
-import {CreateCvDto} from './dto/create-cv.dto';
-import {UpdateCvDto} from './dto/update-cv.dto';
-import {FileInterceptor} from '@nestjs/platform-express';
-import {diskStorage} from 'multer';
-import {CV} from './entities/cv.entity';
-import {GetPaginatedTodoDto} from './dto/get-paginated-cvs.dto';
-import {GetCvDto} from "./dto/get-cv.dto";
+import { CvService } from './cv.service';
+import { CreateCvDto } from './dto/create-cv.dto';
+import { UpdateCvDto } from './dto/update-cv.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { CV } from './entities/cv.entity';
+import { GetPaginatedTodoDto } from './dto/get-paginated-cvs.dto';
+import { GetCvDto } from './dto/get-cv.dto';
 
 @Controller('cv')
 export class CvController {
@@ -60,9 +60,7 @@ export class CvController {
   }
 
   @Get('filters')
-  async findAllWithFilters(
-    @Query('') queryparams: GetCvDto,
-  ): Promise<CV[]> {
+  async findAllWithFilters(@Query('') queryparams: GetCvDto): Promise<CV[]> {
     return await this.cvService.findAllWithFilters(queryparams);
   }
   @Get()

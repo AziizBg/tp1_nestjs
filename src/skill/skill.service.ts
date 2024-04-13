@@ -7,11 +7,10 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class SkillService {
-
   constructor(
     @InjectRepository(Skill)
     private skillRepository: Repository<Skill>,
-  ){}
+  ) {}
 
   create(createSkillDto: CreateSkillDto) {
     return this.skillRepository.save(createSkillDto);
@@ -22,7 +21,7 @@ export class SkillService {
   }
 
   findOne(id: number) {
-    return this.skillRepository.findOne({where: {id}});
+    return this.skillRepository.findOne({ where: { id } });
   }
 
   update(id: number, updateSkillDto: UpdateSkillDto) {
