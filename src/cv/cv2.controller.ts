@@ -37,7 +37,7 @@ export class Cv2Controller {
     // const userId = req['userId'];
     const userId = 2;
     const cv = await this.cvService.findOne(id);
-    if (cv && cv.user.id !== userId  ) {
+    if (cv && cv.user.id !== userId) {
       throw new UnauthorizedException(
         'You are not authorized to update this CV',
       );
