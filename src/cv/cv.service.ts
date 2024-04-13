@@ -1,24 +1,35 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateCvDto } from './dto/create-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CV } from './entities/cv.entity';
 import { Repository } from 'typeorm';
 import { GetPaginatedTodoDto } from './dto/get-paginated-cvs.dto';
+import { UserService } from '../user/user.service';
+import { User } from '../user/entities/user.entity';
 import { GetCvDto } from './dto/get-cv.dto';
+import { UserRoleEnum } from '../Generics/Enums/role-user.enum';
 
 @Injectable()
 export class CvService {
   constructor(
     @InjectRepository(CV)
     private cvRepository: Repository<CV>,
+    private userService: UserService,
   ) {}
-  async create(cv: CreateCvDto): Promise<CV> {
-    return await this.cvRepository.save(cv);
+  async create(cv: CreateCvDto, user: User): Promise<CV> {
+    const newCv = this.cvRepository.create(cv);
+    newCv.user = user;
+    return await this.cvRepository.save(newCv);
   }
 
-  async findAll(): Promise<CV[]> {
-    return await this.cvRepository.find();
+  async findAll(user: User): Promise<CV[]> {
+    if (user.role === UserRoleEnum.ADMIN) return await this.cvRepository.find();
+    return await this.cvRepository.find({ where: { user: { id: user.id } } });
   }
 
   async findAllByUserId(id: number): Promise<CV[]> {
@@ -26,8 +37,8 @@ export class CvService {
     return cvs.filter((cv) => cv.user.id === id);
   }
 
-  async findAllWithFilters(queryParams: GetCvDto) {
-    const Cvs = await this.findAll();
+  async findAllWithFilters(queryParams: GetCvDto, user: User) {
+    const Cvs = await this.findAll(user);
     const { critere, age } = queryParams;
     if (!age && !critere) {
       return Cvs;
@@ -62,7 +73,8 @@ export class CvService {
     return await this.cvRepository.findOneBy({ id });
   }
 
-  async update(id: number, updateCvDto: UpdateCvDto): Promise<CV> {
+  async update(id: number, updateCvDto: UpdateCvDto, user: User): Promise<CV> {
+    const cv = await this.cvRepository.findOneBy({ id });
     const newCv = await this.cvRepository.preload({
       id,
       ...updateCvDto,
@@ -70,7 +82,12 @@ export class CvService {
     if (!newCv) {
       throw new NotFoundException(`CV with id ${id} not found`);
     }
-    return await this.cvRepository.save(newCv);
+    if (user.role === UserRoleEnum.ADMIN || cv.user.id === user.id)
+      return await this.cvRepository.save(newCv);
+    else
+      throw new UnauthorizedException(
+        'You are not authorized to update this CV',
+      );
   }
 
   // async remove(id: number) {
@@ -81,15 +98,39 @@ export class CvService {
   //   return await this.cvRepository.remove(cvToRemove);
   // }
 
-  async softDelete(id: number) {
+  async softDelete(id: number, user: User) {
     const cvToRemove = await this.cvRepository.findOneBy({ id });
     if (!cvToRemove) {
       throw new NotFoundException(`CV with id ${id} not found`);
     }
-    return await this.cvRepository.softDelete(id);
+
+    if (user.role === UserRoleEnum.ADMIN || cvToRemove.user.id === user.id)
+      return await this.cvRepository.softDelete(id);
+    else
+      throw new UnauthorizedException(
+        'You are not authorized to delete this CV',
+      );
   }
 
-  async restore(id: number) {
-    return await this.cvRepository.restore(id);
+  async restore(id: number, user: User) {
+    const [cv] = await this.cvRepository.query(
+      'SELECT * FROM cv WHERE id = ? LIMIT 1',
+      [id],
+    );
+
+    if (user.role === UserRoleEnum.ADMIN || cv.userId === user.id)
+      return await this.cvRepository.restore(id);
+    else
+      throw new UnauthorizedException(
+        'You are not authorized to restore this CV',
+      );
+  }
+
+  async findAllForSeeder(): Promise<CV[]> {
+    return await this.cvRepository.find();
+  }
+
+  async createForSeeder(cv: CV): Promise<CV> {
+    return await this.cvRepository.save(cv);
   }
 }

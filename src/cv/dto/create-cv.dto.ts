@@ -40,8 +40,4 @@ export class CreateCvDto {
   @ValidateNested({ each: true }) // Validates each item in the array
   @Type(() => Skill)
   skills: Skill[];
-
-  @IsNotEmpty()
-  @Type(() => User)
-  user: User;
 }

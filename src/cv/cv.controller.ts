@@ -13,6 +13,8 @@ import {
   Patch,
   Post,
   Query,
+  Req,
+  UnauthorizedException,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -24,9 +26,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { CV } from './entities/cv.entity';
 import { GetPaginatedTodoDto } from './dto/get-paginated-cvs.dto';
-import { GetCvDto } from './dto/get-cv.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { User } from 'src/decorators/user.decorator';
+import { CurrentUser } from '../decorators/user.decorator';
+import { User } from '../user/entities/user.entity';
+import { isInstance } from 'class-validator';
+import { GetCvDto } from './dto/get-cv.dto';
+import { AdminGuard } from '../auth/guards/admin.guard';
+import { UserService } from '../user/user.service';
+import { Request } from 'express';
 
 @Controller({
   path: 'cv',
@@ -63,33 +70,37 @@ export class CvController {
   )
   async create(
     @Body() createCvDto: CreateCvDto,
-    @UploadedFile()
-    // new ParseFilePipe({
+    @UploadedFile() // new ParseFilePipe({
     //   validators: [
-    //     new MaxFileSizeValidator({ maxSize: 1000000 }),
+    image //     new MaxFileSizeValidator({ maxSize: 1000000 }),
     //     new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
     //   ],
     // }),
-    image: Express.Multer.File,
+    : Express.Multer.File,
+    @CurrentUser() user: User,
   ): Promise<CV> {
     createCvDto.path = image ? image.path : '';
-    return await this.cvService.create(createCvDto);
+    return await this.cvService.create(createCvDto, user);
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async findAll(): Promise<CV[]> {
-    return await this.cvService.findAll();
+  async findAll(@CurrentUser() user: User): Promise<CV[]> {
+    //console.log('deco', user);
+    return await this.cvService.findAll(user);
   }
 
   @Get('filters')
   @UseGuards(JwtAuthGuard)
-  async findAllWithFilters(@Query('') queryparams: GetCvDto): Promise<CV[]> {
-    return await this.cvService.findAllWithFilters(queryparams);
+  async findAllWithFilters(
+    @Query('') queryParams: GetCvDto,
+    @CurrentUser() user: User,
+  ): Promise<CV[]> {
+    return await this.cvService.findAllWithFilters(queryParams, user);
   }
 
   @Get('paginated')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   async findPaginated(@Query() queryParams: GetPaginatedTodoDto) {
     return await this.cvService.findAllPaginated(queryParams);
   }
@@ -105,19 +116,75 @@ export class CvController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCvDto: UpdateCvDto,
+    @CurrentUser() user: User,
   ): Promise<CV> {
-    return await this.cvService.update(id, updateCvDto);
+    return await this.cvService.update(id, updateCvDto, user);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    return await this.cvService.softDelete(id);
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: User,
+  ) {
+    return await this.cvService.softDelete(id, user);
   }
 
   @Get('restore/:id')
   @UseGuards(JwtAuthGuard)
-  async restore(@Param('id', ParseIntPipe) id: number) {
-    return await this.cvService.restore(id);
+  async restore(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: User,
+  ) {
+    return await this.cvService.restore(id, user);
+  }
+}
+
+@Controller({
+  path: 'cv',
+  version: '2',
+})
+export class Cv2Controller {
+  constructor(
+    private readonly cvService: CvService,
+    private readonly userService: UserService,
+  ) {}
+
+  @Get()
+  async findAll(@Req() req: Request) {
+    const UserId = req['userId'];
+    return this.cvService.findAllByUserId(UserId);
+  }
+
+  @Patch(':id')
+  async update(
+    @Req() req: Request,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateCvDto: UpdateCvDto,
+  ): Promise<CV> {
+    const userId = req['userId'];
+    const cv = await this.cvService.findOne(id);
+    const user = await this.userService.findOne(userId);
+    if (cv && cv.user.id !== userId) {
+      throw new UnauthorizedException(
+        'You are not authorized to update this CV',
+      );
+    } else {
+      return await this.cvService.update(id, updateCvDto, user);
+    }
+  }
+
+  @Delete(':id')
+  async delete(@Req() req: Request, @Param('id') id: number) {
+    const userId = req['userId'];
+    const cv = await this.cvService.findOne(id);
+    const user = await this.userService.findOne(userId);
+    if (cv && cv.user.id !== userId) {
+      throw new UnauthorizedException(
+        'You are not authorized to delete this CV',
+      );
+    } else {
+      return await this.cvService.softDelete(id, user);
+    }
   }
 }
