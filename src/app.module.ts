@@ -8,6 +8,7 @@ import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import * as dotenv from 'dotenv';
+import { AuthModule } from './auth/auth.module';
 dotenv.config();
 
 @Module({
@@ -37,6 +38,6 @@ export class AppModule {}
 //   configure(consumer: MiddlewareConsumer) {
 //     consumer
 //       .apply(AuthMiddleware)
-//       .forRoutes('cv');
+//       .forRoutes('cv*');
 //   }
 // }
