@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CV } from './entities/cv.entity';
 import { Repository } from 'typeorm';
 import { GetPaginatedTodoDto } from './dto/get-paginated-cvs.dto';
+import { GetCvDto } from './dto/get-cv.dto';
 
 @Injectable()
 export class CvService {
@@ -16,6 +17,30 @@ export class CvService {
     return await this.cvRepository.save(cv);
   }
 
+  async findAll(): Promise<CV[]> {
+    return await this.cvRepository.find();
+  }
+
+  async findAllWithFilters(queryParams: GetCvDto) {
+    const Cvs = await this.findAll();
+    const { critere, age } = queryParams;
+    if (!age && !critere) {
+      return Cvs;
+    }
+    return Cvs.filter((cv) => {
+      if (age && cv.age !== +age) return false;
+      if (
+        critere &&
+        !(
+          cv.name.includes(critere) ||
+          cv.firstname.includes(critere) ||
+          cv.job.includes(critere)
+        )
+      )
+        return false;
+      return true;
+    });
+  }
   async findAllPaginated(queryParams: GetPaginatedTodoDto) {
     const { page, nbPerPage } = queryParams;
     //the default value of page is 1 => start from the first page

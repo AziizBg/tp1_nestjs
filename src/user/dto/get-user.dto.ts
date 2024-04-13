@@ -2,7 +2,7 @@ import { IsNotEmpty, ValidateNested, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CV } from 'src/cv/entities/cv.entity';
 
-export class CreateUserDto {
+export class GetUserDto {
   @IsNotEmpty()
   @IsString()
   username: string;

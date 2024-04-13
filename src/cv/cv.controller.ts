@@ -1,26 +1,27 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseInterceptors,
-  UploadedFile,
-  ParseFilePipe,
   FileTypeValidator,
+  Get,
   MaxFileSizeValidator,
+  Param,
+  ParseFilePipe,
   ParseIntPipe,
+  Patch,
+  Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { CvService } from './cv.service';
-import { CreateCvDto } from './dto/create-cv.dto';
-import { UpdateCvDto } from './dto/update-cv.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { CV } from './entities/cv.entity';
-import { GetPaginatedTodoDto } from './dto/get-paginated-cvs.dto';
+import {CvService} from './cv.service';
+import {CreateCvDto} from './dto/create-cv.dto';
+import {UpdateCvDto} from './dto/update-cv.dto';
+import {FileInterceptor} from '@nestjs/platform-express';
+import {diskStorage} from 'multer';
+import {CV} from './entities/cv.entity';
+import {GetPaginatedTodoDto} from './dto/get-paginated-cvs.dto';
+import {GetCvDto} from "./dto/get-cv.dto";
 
 @Controller('cv')
 export class CvController {
@@ -49,16 +50,21 @@ export class CvController {
     )
     image: Express.Multer.File,
   ): Promise<CV> {
-    const imagePath = image ? image.path : '';
-    console.log('imagePath', image);
-    createCvDto.path = imagePath;
+    createCvDto.path = image ? image.path : '';
     return await this.cvService.create(createCvDto);
   }
 
-  // @Get()
-  // async findAll(): Promise<CV[]> {
-  //   return await this.cvService.findAll();
-  // }
+  @Get()
+  async findAll(): Promise<CV[]> {
+    return await this.cvService.findAll();
+  }
+
+  @Get('filters')
+  async findAllWithFilters(
+    @Query('') queryparams: GetCvDto,
+  ): Promise<CV[]> {
+    return await this.cvService.findAllWithFilters(queryparams);
+  }
   @Get()
   async findPaginated(@Query() queryParams: GetPaginatedTodoDto) {
     return await this.cvService.findAllPaginated(queryParams);

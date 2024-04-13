@@ -23,7 +23,7 @@ async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
   const cvService = app.get(CvService);
   const userService = app.get(UserService);
-  const skillService= app.get(SkillService);
+  const skillService = app.get(SkillService);
   const users = userService.findAll();
   const usersLength = (await users).length;
   const skills = skillService.findAll();
@@ -34,10 +34,10 @@ async function bootstrap() {
   //1. users:
   for (let i = 1; i < 10; i++) {
     const newUser = {
-      username:randUserName(),
+      username: randUserName(),
       email: randEmail(),
       password: randPassword(),
-      role:randRole(),
+      role: randRole(),
     };
     await userService.create(newUser);
   }
@@ -45,10 +45,9 @@ async function bootstrap() {
   // 2. skills:
   for (let i = 1; i < 10; i++) {
     const newSkill = new Skill();
-    newSkill.Designation= randSkill();
+    newSkill.Designation = randSkill();
     await skillService.create(newSkill);
   }
-
 
   // 3. cvs:
   // for (let i = 1; i < 10; i++) {
@@ -58,21 +57,19 @@ async function bootstrap() {
   //   newCv.age = Math.floor(Math.random() * 100);
   //   newCv.cin = randNumber({ min: 10000000, max: 99999999 });
   //   newCv.job = randJobTitle();
-    
+
   //   newCv.user= (await users)[randNumber({ max: usersLength - 1 })];
   //   newCv.path = '';
   //   const shuffledSkills = (await skills).sort(() => 0.5 - Math.random());
   //   newCv.skills = shuffledSkills.slice(0, 3);
   //   console.log('the new cv to add', newCv);
   //   try {
-      
+
   //   await cvService.create(newCv);}
   //   catch (e) {
   //     console.log('error')
   //   }
   // }
-
-
 
   await app.close();
 }
