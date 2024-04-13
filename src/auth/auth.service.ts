@@ -55,6 +55,7 @@ export class AuthService {
       throw new NotFoundException('username or password is incorrect');
     }
     const payload = {
+      id: user.id,
       username: user.username,
       email: user.email,
       role: user.role,

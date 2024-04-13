@@ -7,8 +7,8 @@ import { CV } from './entities/cv.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([CV])],
-  // controllers: [CvController, Cv2Controller],
-  controllers: [CvController],
+  controllers: [CvController, Cv2Controller],
+  // controllers: [CvController],
   providers: [CvService],
 })
 export class CvModule {}

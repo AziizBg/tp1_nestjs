@@ -4,6 +4,8 @@ import {
   Delete,
   FileTypeValidator,
   Get,
+  HttpException,
+  HttpStatus,
   MaxFileSizeValidator,
   Param,
   ParseFilePipe,
@@ -11,7 +13,8 @@ import {
   Patch,
   Post,
   Query,
-  UploadedFile, UseGuards,
+  UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { CvService } from './cv.service';
@@ -22,11 +25,11 @@ import { diskStorage } from 'multer';
 import { CV } from './entities/cv.entity';
 import { GetPaginatedTodoDto } from './dto/get-paginated-cvs.dto';
 import { GetCvDto } from './dto/get-cv.dto';
-import {JwtAuthGuard} from "../auth/guards/jwt-auth.guard";
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller({
   path: 'cv',
-  // version: '1',
+  version: '1',
 })
 export class CvController {
   constructor(private readonly cvService: CvService) {}
@@ -40,17 +43,31 @@ export class CvController {
           cb(null, Date.now() + '-' + file.originalname);
         },
       }),
+      fileFilter: (req, file, cb) => {
+        const allowedFileTypes = /\.(png|jpeg|jpg)$/i;
+        if (!file.originalname.match(allowedFileTypes)) {
+          return cb(
+            new HttpException(
+              'Only PNG, JPEG, and JPG files are allowed',
+              HttpStatus.BAD_REQUEST,
+            ),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+      limits: { fileSize: 1000000 },
     }),
   )
   async create(
     @Body() createCvDto: CreateCvDto,
     @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 1000000 }),
-          new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
-        ],
-      }),
+      // new ParseFilePipe({
+      //   validators: [
+      //     new MaxFileSizeValidator({ maxSize: 1000000 }),
+      //     new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
+      //   ],
+      // }),
     )
     image: Express.Multer.File,
   ): Promise<CV> {

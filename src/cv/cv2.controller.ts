@@ -23,8 +23,7 @@ export class Cv2Controller {
 
   @Get()
   async findAll(@Req() req: Request) {
-    // const UserId = req['userId'];
-    const UserId = 2;
+    const UserId = req['userId'];
     return this.cvService.findAllByUserId(UserId);
   }
 
@@ -34,8 +33,7 @@ export class Cv2Controller {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCvDto: UpdateCvDto,
   ): Promise<CV> {
-    // const userId = req['userId'];
-    const userId = 2;
+    const userId = req['userId'];
     const cv = await this.cvService.findOne(id);
     if (cv && cv.user.id !== userId  ) {
       throw new UnauthorizedException(
@@ -48,8 +46,7 @@ export class Cv2Controller {
 
   @Delete(':id')
   async delete(@Req() req: Request, @Param('id') id: number) {
-    // const userId = req['userId'];
-    const userId = 2;
+    const userId = req['userId'];
     const cv = await this.cvService.findOne(id);
     if (cv && cv.user.id !== userId) {
       throw new UnauthorizedException(

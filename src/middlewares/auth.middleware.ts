@@ -11,12 +11,12 @@ export class AuthMiddleware implements NestMiddleware {
     if (!token) {
       return res
         .status(403)
-        .json({ message: 'Vous ne pouvez pas accéder à cette ressource.' });
+        .json({ message: 'Vous ne pouvez pas accéder à cette ressource.Pas de token' });
     }
 
     try {
       const decoded = verify(token as string, process.env.JWT_SECRET);
-      req['userId'] = decoded['userId'];
+      req['userId'] = decoded['id'];
       next();
     } catch (err) {
       return res.status(403).json({ message: 'Token invalide.' });
