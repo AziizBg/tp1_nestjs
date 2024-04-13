@@ -14,7 +14,7 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() credentials: LoginCredentialsDto) {
-    console.log('credentials', credentials);
+    // console.log('credentials', credentials);
     return await this.authService.login(credentials);
   }
 }

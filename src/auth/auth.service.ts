@@ -46,7 +46,7 @@ export class AuthService {
         username,
       })
       .getOne();
-    console.log('user', user);
+    // console.log('user', user);
     if (!user) {
       throw new NotFoundException('username or password is incorrect');
     }
