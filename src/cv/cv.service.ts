@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateCvDto } from './dto/create-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,10 +17,11 @@ export class CvService {
     private cvRepository: Repository<CV>,
     private userService: UserService,
   ) {}
-  async create(cv: CreateCvDto, user: User): Promise<CV> {
+  async create(cv: CreateCvDto, user: User) {
     const newCv = this.cvRepository.create(cv);
     newCv.user = user;
-    return await this.cvRepository.save(newCv);
+    await this.cvRepository.save(newCv);
+    return 'CV created successfully'
   }
 
   async findAll(user: User): Promise<CV[]> {
@@ -33,36 +30,40 @@ export class CvService {
   }
 
   async findAllByUserId(id: number): Promise<CV[]> {
-    const cvs = await this.cvRepository.find();
-    return cvs.filter((cv) => cv.user.id === id);
+    const cvs = await this.cvRepository.find({ relations: ['user'] });
+    return cvs.filter((cv) => cv.user?.id === id);
   }
 
-  async findAllWithFilters(queryParams: GetCvDto, user: User) {
-    const Cvs = await this.findAll(user);
+  async findAllWithFilters(queryParams: GetCvDto, user: User): Promise<CV[]> {
     const { critere, age } = queryParams;
-    if (!age && !critere) {
-      return Cvs;
+    let query = this.cvRepository.createQueryBuilder('cv');
+
+    if (critere) {
+      query.where(
+        '(cv.name LIKE :critere OR cv.firstname LIKE :critere OR cv.job LIKE :critere)',
+        { critere: `%${critere}%` }
+      );
+
     }
-    return Cvs.filter((cv) => {
-      if (age && cv.age !== +age) return false;
-      if (
-        critere &&
-        !(
-          cv.name.includes(critere) ||
-          cv.firstname.includes(critere) ||
-          cv.job.includes(critere)
-        )
-      )
-        return false;
-      return true;
-    });
+
+    if (age) {
+      query = query.andWhere('cv.age = :age', { age: parseInt(age, 10) });
+    }
+    if (user.role === UserRoleEnum.ADMIN) {
+      return await query.getMany();
+    }
+    query = query.andWhere('cv.userId = :userId', { userId: user.id });
+    return await query.getMany();
   }
   async findAllPaginated(queryParams: GetPaginatedTodoDto) {
     const { page, nbPerPage } = queryParams;
+
     //the default value of page is 1 => start from the first page
     const realPage = page || 1;
+
     //the default value of nbPerPage is the total number of CVs in the database
     const realNbPerPage = nbPerPage || (await this.cvRepository.count());
+
     return await this.cvRepository.find({
       take: realNbPerPage,
       skip: realNbPerPage * (realPage - 1),
@@ -70,11 +71,14 @@ export class CvService {
   }
 
   async findOne(id: number): Promise<CV | null> {
-    return await this.cvRepository.findOneBy({ id });
+    return await this.cvRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
   }
 
   async update(id: number, updateCvDto: UpdateCvDto, user: User): Promise<CV> {
-    const cv = await this.cvRepository.findOneBy({ id });
+    const cv = await this.findOne(id);
     const newCv = await this.cvRepository.preload({
       id,
       ...updateCvDto,
@@ -82,7 +86,7 @@ export class CvService {
     if (!newCv) {
       throw new NotFoundException(`CV with id ${id} not found`);
     }
-    if (user.role === UserRoleEnum.ADMIN || cv.user.id === user.id)
+    if (user.role === UserRoleEnum.ADMIN || cv.user?.id === user.id)
       return await this.cvRepository.save(newCv);
     else
       throw new UnauthorizedException(
@@ -98,8 +102,8 @@ export class CvService {
   //   return await this.cvRepository.remove(cvToRemove);
   // }
 
-  async softDelete(id: number, user: User) {
-    const cvToRemove = await this.cvRepository.findOneBy({ id });
+  async remove(id: number, user: User) {
+    const cvToRemove = await this.findOne(id);
     if (!cvToRemove) {
       throw new NotFoundException(`CV with id ${id} not found`);
     }

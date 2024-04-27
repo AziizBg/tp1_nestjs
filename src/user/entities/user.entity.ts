@@ -32,7 +32,8 @@ export class User extends TimestampEntities {
   role: string;
   @OneToMany(() => CV, (cv) => cv.user, {
     nullable: true,
-    cascade: true,
+    cascade: ['insert', 'update'],
+    onDelete: 'CASCADE',
   })
   cvs: CV[];
 }

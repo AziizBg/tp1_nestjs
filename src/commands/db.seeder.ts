@@ -31,7 +31,7 @@ async function bootstrap() {
 
   // run users and skills first and comment the cvs and then run the cvs and comment the users and skills
 
-  //1. users:
+  // 1. users:
   // for (let i = 1; i < 10; i++) {
   //   const newUser = {
   //     username: randUserName(),
@@ -41,8 +41,8 @@ async function bootstrap() {
   //   };
   //   await userService.create(newUser);
   // }
-  //
-  // // 2. skills:
+
+  // 2. skills:
   // for (let i = 1; i < 10; i++) {
   //   const newSkill = new Skill();
   //   newSkill.Designation = randSkill();

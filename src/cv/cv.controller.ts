@@ -2,19 +2,15 @@ import {
   Body,
   Controller,
   Delete,
-  FileTypeValidator,
   Get,
   HttpException,
   HttpStatus,
-  MaxFileSizeValidator,
   Param,
-  ParseFilePipe,
   ParseIntPipe,
   Patch,
   Post,
   Query,
   Req,
-  UnauthorizedException,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -29,7 +25,6 @@ import { GetPaginatedTodoDto } from './dto/get-paginated-cvs.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../decorators/user.decorator';
 import { User } from '../user/entities/user.entity';
-import { isInstance } from 'class-validator';
 import { GetCvDto } from './dto/get-cv.dto';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { UserService } from '../user/user.service';
@@ -70,15 +65,9 @@ export class CvController {
   )
   async create(
     @Body() createCvDto: CreateCvDto,
-    @UploadedFile() // new ParseFilePipe({
-    //   validators: [
-    image //     new MaxFileSizeValidator({ maxSize: 1000000 }),
-    //     new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
-    //   ],
-    // }),
-    : Express.Multer.File,
+    @UploadedFile() image: Express.Multer.File,
     @CurrentUser() user: User,
-  ): Promise<CV> {
+  ){
     createCvDto.path = image ? image.path : '';
     return await this.cvService.create(createCvDto, user);
   }
@@ -86,7 +75,6 @@ export class CvController {
   @Get()
   @UseGuards(JwtAuthGuard)
   async findAll(@CurrentUser() user: User): Promise<CV[]> {
-    //console.log('deco', user);
     return await this.cvService.findAll(user);
   }
 
@@ -127,7 +115,7 @@ export class CvController {
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: User,
   ) {
-    return await this.cvService.softDelete(id, user);
+    return await this.cvService.remove(id, user);
   }
 
   @Get('restore/:id')
@@ -152,8 +140,20 @@ export class Cv2Controller {
 
   @Get()
   async findAll(@Req() req: Request) {
-    const UserId = req['userId'];
-    return this.cvService.findAllByUserId(UserId);
+    const userId = req['userId'];
+    return await this.cvService.findAllByUserId(userId);
+  }
+
+  @Post()
+  async create(
+    @Body() createCvDto: CreateCvDto,
+    @Req() req: Request,
+  ){
+    const userId = req['userId'];
+    const user = await this.userService.findOne(userId);
+    console.log('user', user);
+    console.log('createCvDto', createCvDto);
+    return await this.cvService.create(createCvDto, user);
   }
 
   @Patch(':id')
@@ -163,28 +163,14 @@ export class Cv2Controller {
     @Body() updateCvDto: UpdateCvDto,
   ): Promise<CV> {
     const userId = req['userId'];
-    const cv = await this.cvService.findOne(id);
     const user = await this.userService.findOne(userId);
-    if (cv && cv.user.id !== userId) {
-      throw new UnauthorizedException(
-        'You are not authorized to update this CV',
-      );
-    } else {
-      return await this.cvService.update(id, updateCvDto, user);
-    }
+    return await this.cvService.update(id, updateCvDto, user);
   }
 
   @Delete(':id')
   async delete(@Req() req: Request, @Param('id') id: number) {
     const userId = req['userId'];
-    const cv = await this.cvService.findOne(id);
     const user = await this.userService.findOne(userId);
-    if (cv && cv.user.id !== userId) {
-      throw new UnauthorizedException(
-        'You are not authorized to delete this CV',
-      );
-    } else {
-      return await this.cvService.softDelete(id, user);
-    }
+    return await this.cvService.remove(id, user);
   }
 }

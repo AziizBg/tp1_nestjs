@@ -10,7 +10,7 @@ export class AuthMiddleware implements NestMiddleware {
     const token = req.headers['auth-user'];
     if (!token) {
       return res.status(403).json({
-        message: 'Vous ne pouvez pas accéder à cette ressource.Pas de token',
+        message: 'Vous ne pouvez pas accéder à cette ressource. Pas de token',
       });
     }
 
