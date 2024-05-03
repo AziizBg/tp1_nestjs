@@ -6,11 +6,12 @@ import { CV } from './entities/cv.entity';
 import { CvListener } from './listeners/cv.listener';
 import { UserService } from '../user/user.service';
 import { User } from '../user/entities/user.entity';
+import { History } from 'src/history/entities/history.entity';
+import { HistoryService } from 'src/history/history.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CV, User])],
+  imports: [TypeOrmModule.forFeature([CV, User, History])],
   controllers: [CvController, Cv2Controller],
-  // controllers: [CvController],
-  providers: [CvService, CvListener, UserService],
+  providers: [CvService, UserService, CvListener, HistoryService],
 })
 export class CvModule {}
