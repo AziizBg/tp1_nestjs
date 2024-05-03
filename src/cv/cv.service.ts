@@ -13,17 +13,19 @@ import { UserService } from '../user/user.service';
 import { User } from '../user/entities/user.entity';
 import { GetCvDto } from './dto/get-cv.dto';
 import { UserRoleEnum } from '../Generics/Enums/role-user.enum';
-
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { CvEvents } from './cv.events';
 @Injectable()
 export class CvService {
   constructor(
     @InjectRepository(CV)
     private cvRepository: Repository<CV>,
     private userService: UserService,
+    private eventEmitter: EventEmitter2,
   ) {}
   async create(cv: CreateCvDto, user: User) {
-    const newCv = this.cvRepository.create(cv);
-    newCv.user = user;
+    // return await this.cvRepository.save(cv);
+    const newCv =  this.cvRepository.create(cv);
     await this.cvRepository.save(newCv);
     return 'CV created successfully';
   }
@@ -73,11 +75,12 @@ export class CvService {
     });
   }
 
-  async findOne(id: number): Promise<CV | null> {
-    return await this.cvRepository.findOne({
+  async findOne(id: number){
+    const cv =await this.cvRepository.findOne({
       where: { id },
       relations: ['user'],
     });
+    return cv; 
   }
 
   async update(id: number, updateCvDto: UpdateCvDto, user: User): Promise<CV> {
@@ -89,8 +92,14 @@ export class CvService {
     if (!newCv) {
       throw new NotFoundException(`CV with id ${id} not found`);
     }
-    if (user.role === UserRoleEnum.ADMIN || cv.user?.id === user.id)
+    if (user.role === UserRoleEnum.ADMIN || cv.user?.id === user.id){
+      this.eventEmitter.emit(CvEvents.CV_OPERATION, {
+        operationType: CvEvents.CV_UPDATED,
+        cvId: id,
+        userId: user.id,
+      });
       return await this.cvRepository.save(newCv);
+    }
     else
       throw new UnauthorizedException(
         'You are not authorized to update this CV',
@@ -111,8 +120,14 @@ export class CvService {
       throw new NotFoundException(`CV with id ${id} not found`);
     }
 
-    if (user.role === UserRoleEnum.ADMIN || cvToRemove.user.id === user.id)
+    if (user.role === UserRoleEnum.ADMIN || cvToRemove.user.id === user.id){
+      this.eventEmitter.emit(CvEvents.CV_OPERATION, {
+        operationType: CvEvents.CV_DELETED,
+        cvId: id,
+        userId: user.id,
+      });
       return await this.cvRepository.softDelete(id);
+    }
     else
       throw new UnauthorizedException(
         'You are not authorized to delete this CV',
@@ -125,8 +140,13 @@ export class CvService {
       [id],
     );
 
-    if (user.role === UserRoleEnum.ADMIN || cv.userId === user.id)
-      return await this.cvRepository.restore(id);
+    if (user.role === UserRoleEnum.ADMIN || cv.userId === user.id){
+      this.eventEmitter.emit(CvEvents.CV_OPERATION, {
+        operationType: CvEvents.CV_RESTORED,
+        cvId: id,
+        userId: user.id,
+      });
+      return await this.cvRepository.restore(id);}
     else
       throw new UnauthorizedException(
         'You are not authorized to restore this CV',

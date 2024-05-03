@@ -9,6 +9,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import * as dotenv from 'dotenv';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { HistoryModule } from './history/history.module';
 dotenv.config();
 
 @Module({
@@ -25,6 +27,7 @@ dotenv.config();
       synchronize: true,
       debug: false,
     }),
+    EventEmitterModule.forRoot(),
     CvModule,
     SkillModule,
     UserModule,
