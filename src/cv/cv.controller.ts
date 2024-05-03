@@ -67,8 +67,8 @@ export class CvController {
     @Body() createCvDto: CreateCvDto,
     @UploadedFile() image: Express.Multer.File,
     @CurrentUser() user: User,
-  ){
-    createCvDto.path = image ? image.path : '';
+  ) {
+    createCvDto.path = image ? image.filename : '';
     return await this.cvService.create(createCvDto, user);
   }
 
@@ -145,10 +145,7 @@ export class Cv2Controller {
   }
 
   @Post()
-  async create(
-    @Body() createCvDto: CreateCvDto,
-    @Req() req: Request,
-  ){
+  async create(@Body() createCvDto: CreateCvDto, @Req() req: Request) {
     const userId = req['userId'];
     const user = await this.userService.findOne(userId);
     console.log('user', user);

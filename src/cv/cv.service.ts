@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateCvDto } from './dto/create-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,13 +27,7 @@ export class CvService {
     // return await this.cvRepository.save(cv);
     const newCv =  this.cvRepository.create(cv);
     await this.cvRepository.save(newCv);
-    const payload = {
-      operationType: CvEvents.CV_CREATED,
-      cvId: newCv.id,
-      userId: user.id,
-    };
-    this.eventEmitter.emit(CvEvents.CV_OPERATION, payload);
-    return 'CV created successfully'
+    return 'CV created successfully';
   }
 
   async findAll(user: User): Promise<CV[]> {
@@ -49,9 +47,8 @@ export class CvService {
     if (critere) {
       query.where(
         '(cv.name LIKE :critere OR cv.firstname LIKE :critere OR cv.job LIKE :critere)',
-        { critere: `%${critere}%` }
+        { critere: `%${critere}%` },
       );
-
     }
 
     if (age) {

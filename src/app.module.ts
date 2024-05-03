@@ -7,6 +7,7 @@ import { SkillModule } from './skill/skill.module';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { ChatModule } from './chat/chat.module';
 import * as dotenv from 'dotenv';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { HistoryModule } from './history/history.module';
@@ -31,7 +32,7 @@ dotenv.config();
     SkillModule,
     UserModule,
     AuthModule,
-    HistoryModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
