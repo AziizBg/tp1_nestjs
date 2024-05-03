@@ -6,15 +6,21 @@ import { CV } from './entities/cv.entity';
 import { Repository } from 'typeorm';
 import { GetPaginatedTodoDto } from './dto/get-paginated-cvs.dto';
 import { GetCvDto } from './dto/get-cv.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class CvService {
   constructor(
     @InjectRepository(CV)
     private cvRepository: Repository<CV>,
+    private eventEmitter: EventEmitter2
   ) {}
   async create(cv: CreateCvDto): Promise<CV> {
-    return await this.cvRepository.save(cv);
+    // return await this.cvRepository.save(cv);
+    const newCv =  this.cvRepository.create(cv);
+    await this.cvRepository.save(newCv);
+    this.eventEmitter.emit('cv.created', { name: newCv.name });
+    return newCv;
   }
 
   async findAll(): Promise<CV[]> {

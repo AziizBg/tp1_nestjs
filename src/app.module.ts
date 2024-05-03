@@ -8,6 +8,7 @@ import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import * as dotenv from 'dotenv';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 dotenv.config();
 
 @Module({
@@ -24,6 +25,7 @@ dotenv.config();
       synchronize: true,
       debug: false,
     }),
+    EventEmitterModule.forRoot(),
     CvModule,
     SkillModule,
     UserModule,
