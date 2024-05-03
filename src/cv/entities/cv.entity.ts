@@ -41,7 +41,7 @@ export class CV extends TimestampEntities {
 
   @ManyToMany(() => Skill, (skill) => skill.cvs, {
     nullable: true,
-    cascade: true,
+    cascade: ['insert', 'update'],
     eager: true,
   })
   @JoinTable()
@@ -50,7 +50,7 @@ export class CV extends TimestampEntities {
   @ManyToOne(() => User, (user) => user.cvs, {
     nullable: false,
     cascade: ['insert', 'update'],
-    eager: true,
+    // eager: true,
   })
   user: User;
 }

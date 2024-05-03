@@ -24,11 +24,16 @@ export class User extends TimestampEntities {
   @Column()
   salt: string;
 
-  @Column()
+  @Column({
+    type: 'enum',
+    enum: UserRoleEnum,
+    default: UserRoleEnum.USER,
+  })
   role: string;
   @OneToMany(() => CV, (cv) => cv.user, {
     nullable: true,
-    cascade: true,
+    cascade: ['insert', 'update'],
+    onDelete: 'CASCADE',
   })
   cvs: CV[];
 }

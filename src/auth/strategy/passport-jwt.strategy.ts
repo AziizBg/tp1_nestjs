@@ -23,14 +23,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: PayloadInterface) {
-    // console.log(payload);
+    //console.log(payload);
     const user = await this.userRepository.findOneBy({
       username: payload.username,
     });
 
     if (user) {
-      // console.log('user', user);
-      // console.log('payload', payload);
+      //console.log('user', user);
+      //console.log('payload', payload);
       delete user.salt;
       delete user.password;
       return user;

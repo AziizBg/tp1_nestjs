@@ -1,8 +1,9 @@
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { CV } from '../../cv/entities/cv.entity';
+import { TimestampEntities } from '../../Generics/timestamp.entities';
 
 @Entity('skill')
-export class Skill {
+export class Skill extends TimestampEntities {
   @PrimaryGeneratedColumn()
   id: number;
 

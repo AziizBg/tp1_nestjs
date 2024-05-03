@@ -9,11 +9,9 @@ export class AuthMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     const token = req.headers['auth-user'];
     if (!token) {
-      return res
-        .status(403)
-        .json({
-          message: 'Vous ne pouvez pas accéder à cette ressource.Pas de token',
-        });
+      return res.status(403).json({
+        message: 'Vous ne pouvez pas accéder à cette ressource. Pas de token',
+      });
     }
 
     try {
