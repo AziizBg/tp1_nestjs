@@ -2,13 +2,17 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChatEntity } from './entities/chat.entity';
-import { IsNull, Repository } from 'typeorm';
+import { Equal, IsNull, Repository } from 'typeorm';
+import { LikeDto } from './dto/like.dto';
+import { LikeEntity } from './entities/like.entity';
 
 @Injectable()
 export class ChatService {
   constructor(
     @InjectRepository(ChatEntity)
     private readonly ChatRepository: Repository<ChatEntity>,
+    @InjectRepository(LikeEntity)
+    private readonly likeRepository: Repository<LikeEntity>,
   ) {}
   clientToUser: any = {};
   private organizeMessages(messages: any[]): any[] {
@@ -93,6 +97,24 @@ export class ChatService {
       await this.ChatRepository.softRemove(messageToDelete);
     } else {
       throw new NotFoundException(`Message with id ${id} not found.`);
+    }
+  }
+  async likeDislikeMessage(likeDto: LikeDto) {
+    const existingLike = await this.likeRepository.findOne({
+      where: {
+        owner: Equal(likeDto.owner.id),
+        message: Equal(likeDto.message.id),
+      },
+    });
+    console.log('likeDto', likeDto.owner.id, likeDto.message.id);
+    console.log('existingLike', existingLike);
+    if (existingLike) {
+      await this.likeRepository.remove(existingLike);
+      return 'disliked';
+    } else {
+      const like = this.likeRepository.create(likeDto);
+      await this.likeRepository.save(like);
+      return 'liked';
     }
   }
 }

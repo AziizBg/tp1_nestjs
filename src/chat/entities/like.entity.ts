@@ -7,25 +7,17 @@ import {
 } from 'typeorm';
 import { TimestampEntities } from '../../Generics/timestamp.entities';
 import { User } from '../../user/entities/user.entity';
-@Entity('chat')
-export class ChatEntity extends TimestampEntities {
+import { ChatEntity } from './chat.entity';
+@Entity('like')
+export class LikeEntity extends TimestampEntities {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column()
-  content: string;
   @ManyToOne(() => User, {
     nullable: false,
   })
-  author: User;
+  owner: User;
   @ManyToOne(() => ChatEntity, {
-    nullable: true,
+    nullable: false,
   })
-  parent: ChatEntity;
-  @OneToMany(() => ChatEntity, (commonChat) => commonChat.parent, {
-    nullable: true,
-    cascade: ['soft-remove'],
-  })
-  replies: ChatEntity[];
-  @Column()
-  nbLikes: number;
+  message: ChatEntity;
 }
