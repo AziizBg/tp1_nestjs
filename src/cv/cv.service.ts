@@ -9,6 +9,8 @@ import { UserService } from '../user/user.service';
 import { User } from '../user/entities/user.entity';
 import { GetCvDto } from './dto/get-cv.dto';
 import { UserRoleEnum } from '../Generics/Enums/role-user.enum';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { CvEvents } from './cv.events';
 
 @Injectable()
 export class CvService {
@@ -16,11 +18,18 @@ export class CvService {
     @InjectRepository(CV)
     private cvRepository: Repository<CV>,
     private userService: UserService,
+    private eventEmitter: EventEmitter2,
   ) {}
   async create(cv: CreateCvDto, user: User) {
     const newCv = this.cvRepository.create(cv);
     newCv.user = user;
     await this.cvRepository.save(newCv);
+    const payload = {
+      operationType: CvEvents.CV_CREATED,
+      cvId: newCv.id,
+      userId: user.id,
+    };
+    this.eventEmitter.emit(CvEvents.CV_OPERATION, payload);
     return 'CV created successfully'
   }
 
