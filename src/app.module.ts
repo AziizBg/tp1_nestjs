@@ -11,6 +11,7 @@ import { ChatModule } from './chat/chat.module';
 import * as dotenv from 'dotenv';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { HistoryModule } from './history/history.module';
+import { NotificationModule } from './notification/notification.module';
 dotenv.config();
 
 @Module({
@@ -33,6 +34,7 @@ dotenv.config();
     UserModule,
     AuthModule,
     ChatModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

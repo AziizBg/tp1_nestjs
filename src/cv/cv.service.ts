@@ -23,9 +23,11 @@ export class CvService {
     private userService: UserService,
     private eventEmitter: EventEmitter2,
   ) {}
+
   async create(cv: CreateCvDto, user: User) {
     // return await this.cvRepository.save(cv);
     const newCv =  this.cvRepository.create(cv);
+    this.eventEmitter.emit(CvEvents.CV_CREATED, { cvId: newCv.id, userId: user.id });
     await this.cvRepository.save(newCv);
     return 'CV created successfully';
   }
@@ -98,6 +100,7 @@ export class CvService {
         cvId: id,
         userId: user.id,
       });
+      this.eventEmitter.emit(CvEvents.CV_UPDATED, { cvId: id, userId: user.id });
       return await this.cvRepository.save(newCv);
     }
     else
@@ -126,6 +129,7 @@ export class CvService {
         cvId: id,
         userId: user.id,
       });
+      this.eventEmitter.emit(CvEvents.CV_DELETED, { cvId: id, userId: user.id });
       return await this.cvRepository.softDelete(id);
     }
     else
@@ -146,6 +150,7 @@ export class CvService {
         cvId: id,
         userId: user.id,
       });
+      this.eventEmitter.emit(CvEvents.CV_RESTORED, { cvId: id, userId: user.id });
       return await this.cvRepository.restore(id);}
     else
       throw new UnauthorizedException(
