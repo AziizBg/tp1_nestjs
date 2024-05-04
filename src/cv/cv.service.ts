@@ -25,11 +25,16 @@ export class CvService {
   ) {}
 
   async create(cv: CreateCvDto, user: User) {
-    // return await this.cvRepository.save(cv);
-    const newCv =  this.cvRepository.create(cv);
-    this.eventEmitter.emit(CvEvents.CV_CREATED, { cvId: newCv.id, userId: user.id });
+    const newCv = this.cvRepository.create(cv);
+    newCv.user = user;
     await this.cvRepository.save(newCv);
-    return 'CV created successfully';
+    const payload = {
+      operationType: CvEvents.CV_CREATED,
+      cvId: newCv.id,
+      userId: user.id,
+    };
+    this.eventEmitter.emit(CvEvents.CV_OPERATION, payload);
+    return 'CV created successfully'
   }
 
   async findAll(user: User): Promise<CV[]> {

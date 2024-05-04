@@ -11,14 +11,16 @@ export class NotificationService {
 
   userNotificationStream(): Observable<CreateNotification> {
     return new Observable<CreateNotification>(observer => {
-      this.eventEmitter.on(CvEvents.CV_DELETED, ({ cvId, userId }) => {
+      this.eventEmitter.on(CvEvents.CV_OPERATION, (data) => {
         const notification: CreateNotification = {
-          title: 'CV Supprimé',
-          content: `Le CV avec l'ID ${cvId} a été supprimé.`,
-          receiverId: userId,
-          notificationEvent: CvEvents.CV_DELETED,
+          title: data.operationType,
+          content: `${data.operationType} a été effectué sur le CV avec l'ID ${data.cvId}.`, 
+          receiverId: data.userId,
+          notificationEvent: data.operationType,
           isRead: false,
         };
+        console.log("from notification:", notification);
+        console.log("data:", data);
         observer.next(notification);
       });
       //

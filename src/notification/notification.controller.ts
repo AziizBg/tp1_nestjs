@@ -10,10 +10,19 @@ interface MessageEvent {
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {
   }
+
+  
   @Sse('events-for-user')
   sseEvents(): Observable<MessageEvent> {
     return this.notificationService.userNotificationStream().pipe(
       map(notification => ({ data: notification })),
+    );
+  }
+
+  @Sse('test-sse')
+  sseTest(): Observable<MessageEvent> {
+    return interval(1000).pipe(
+      map((count) => ({ data: `Test message ${count}` })),
     );
   }
 

@@ -10,6 +10,6 @@ async function bootstrap() {
     type: VersioningType.URI,
   });
   app.useStaticAssets(path.join(__dirname, '../uploads'));
-  await app.listen(3001);
+  await app.listen(3000);
 }
 bootstrap();
