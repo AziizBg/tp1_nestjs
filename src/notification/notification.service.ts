@@ -4,12 +4,13 @@ import { CvEvents } from '../cv/cv.events';
 import { CreateCvDto } from '../cv/dto/create-cv.dto';
 import { CreateGenericAdminNotification, CreateNotification } from './notification.model';
 import { Observable } from 'rxjs';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class NotificationService {
   constructor(private eventEmitter: EventEmitter2) {}
 
-  userNotificationStream(): Observable<CreateNotification> {
+  userNotificationStream(user: User): Observable<CreateNotification> {
     return new Observable<CreateNotification>(observer => {
       this.eventEmitter.on(CvEvents.CV_OPERATION, (data) => {
         const notification: CreateNotification = {
@@ -19,9 +20,16 @@ export class NotificationService {
           notificationEvent: data.operationType,
           isRead: false,
         };
+        console.log("============================================");
+        console.log("user notif");
         console.log("from notification:", notification);
         console.log("data:", data);
-        observer.next(notification);
+        if(data.userId == user.id){
+          observer.next(notification);
+        }
+        else{
+          console.log("Not the same user");
+        }
       });
       //
       // this.eventEmitter.on(CvEvents.CV_CREATED, ({ cvId, userId }) => {
@@ -61,13 +69,16 @@ export class NotificationService {
 
   adminNotificationsStream(): Observable<CreateGenericAdminNotification> {
     return new Observable<CreateGenericAdminNotification>(observer => {
-      this.eventEmitter.on(CvEvents.CV_DELETED, ({ cvId }) => {
+      this.eventEmitter.on(CvEvents.CV_OPERATION, (data) => {
         const notification: CreateGenericAdminNotification = {
-          title: 'CV Supprimé',
-          content: `Le CV avec l'ID ${cvId} a été supprimé.`,
-          notificationEvent: CvEvents.CV_DELETED,
+          title: data.operationType,
+          content: `${data.operationType} a été effectué sur le CV avec l'ID ${data.cvId}.`,
+          notificationEvent: data.operationType,  
           isRead: false,
         };
+        console.log('===============================');
+        console.log('admin notif');
+        console.log(notification);
         observer.next(notification);
       });
       // this.eventEmitter.on(CvEvents.CV_CREATED, ({ cvId, userId }) => {

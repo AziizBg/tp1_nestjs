@@ -1,6 +1,10 @@
-import { Controller, Sse } from '@nestjs/common';
+import { Controller, Sse, UseGuards } from '@nestjs/common';
 import { interval, map, Observable } from 'rxjs';
 import { NotificationService } from './notification.service';
+import { CurrentUser } from '../decorators/user.decorator';
+import { User } from 'src/user/entities/user.entity';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+
 
 interface MessageEvent {
   data: string | object;
@@ -11,10 +15,11 @@ export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {
   }
 
-  
+  @UseGuards(JwtAuthGuard)
   @Sse('events-for-user')
-  sseEvents(): Observable<MessageEvent> {
-    return this.notificationService.userNotificationStream().pipe(
+  sseEvents(@CurrentUser() user: User): Observable<MessageEvent> {
+    console.log("user:", user);
+    return this.notificationService.userNotificationStream(user).pipe(
       map(notification => ({ data: notification })),
     );
   }

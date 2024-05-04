@@ -26,6 +26,7 @@ export class CvListener {
     payload.user= user;
     const savedOperation =  this.historyService.addHistoryEntry(payload);
     payload.date = (await savedOperation).createdAt;
-    console.log(payload.operationType, payload);} 
+    // console.log(payload.operationType, payload);
+  } 
 }
 
